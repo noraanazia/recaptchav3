@@ -1,5 +1,6 @@
-import { createStore, applyMiddleware, combineReducers } from 'redux';
-import {thunk} from 'redux-thunk';
+import { applyMiddleware, combineReducers } from 'redux';
+import { thunk} from 'redux-thunk';
+import { legacy_createStore as createStore} from 'redux'
 
 // Initial state for authentication
 const initialAuthState = {

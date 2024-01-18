@@ -1,5 +1,5 @@
 import axios from "axios"
-import React, { FormEvent, useState, useEffect } from "react"
+import React, { FormEvent, useState, useEffect, CSSProperties } from "react"
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
@@ -24,26 +24,6 @@ export const SecuredPage = () => {
 		}
 	  }, [executeRecaptcha]);
 
-	//   useEffect(() => {
-    //     const checkAuthentication = async () => {
-    //         try {
-    //             const response = await axios.get('/validate-jwt');
-    //             if (!response.data.isAuthenticated) {
-    //                 navigate('/login'); // Redirect to login if not authenticated
-    //             } else {
-    //                 // Fetch secure content if authenticated
-    //                 const secureContent = await axios.get('/secure');
-    //                 setMessage(secureContent.data);
-    //             }
-    //         } catch (error) {
-    //             console.error('Error checking authentication', error);
-    //             navigate('/login');
-    //         }
-    //     };
-
-    //     checkAuthentication();
-    // }, [navigate]);
-
 	  const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
 		const { name, value } = e.target;
 		setFormData(prevState => ({
@@ -65,7 +45,6 @@ export const SecuredPage = () => {
 
     try {
 		const response = await axios.post('/verify-recaptcha', { token: gRecaptchaToken, formData });
-	  console.log('response:', response);
   
 	  if (response?.data?.success === true) {
 		  console.log('ReCaptcha Verified: ', response?.data);
@@ -83,16 +62,36 @@ export const SecuredPage = () => {
 	}
   
 	return (
-    <div>
-      <h1 className='text-xl text-center'>Recaptcha (V3) Sample - Secure Page</h1>
-      <br />
-      <form className='flex flex-col justify-start items-center gap-4' onSubmit={handleSubmit}>
-	  	<input type='text' name='nativeName' placeholder='Native Name' className="border p-4 rounded"  value={formData.nativeName} onChange={handleInputChange}/>
-        <input type='text' name='lastName' placeholder='Last Name' className="border p-4 rounded"  value={formData.lastName} onChange={handleInputChange}/>
-        <input type='email' name='email' placeholder='Email' className="border p-4 rounded"  value={formData.email} onChange={handleInputChange}/>
-        <input type="submit" className="border p-4 text-lg rounded bg-blue-500" />
-      </form>
-      {submitStatus && submitStatus && <p className="text-lg text-center">{submitStatus}</p>}
-    </div>
-  )
+	<div style={{ fontFamily: 'Arial, sans-serif', padding: '20px' }}>
+            <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Recaptcha (V3) Sample - Secure Page</h1>
+            <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }} onSubmit={handleSubmit}>
+                <input type='text' name='nativeName' placeholder='Native Name' style={inputStyle} value={formData.nativeName} onChange={handleInputChange}/>
+                <input type='text' name='lastName' placeholder='Last Name' style={inputStyle} value={formData.lastName} onChange={handleInputChange}/>
+                <input type='email' name='email' placeholder='Email' style={inputStyle} value={formData.email} onChange={handleInputChange}/>
+                <input type="submit" style={submitButtonStyle} />
+            </form>
+            {submitStatus && <p style={{ textAlign: 'center', marginTop: '20px' }}>{submitStatus}</p>}
+        </div>
+    );
 }
+
+const inputStyle = {
+    border: '1px solid #ccc',
+    padding: '10px 15px',
+    borderRadius: '5px',
+    width: '300px'
+};
+
+const submitButtonStyle: CSSProperties = {
+    border: 'none',
+    padding: '10px 15px',
+    textAlign: 'center',
+    textDecoration: 'none',
+    display: 'inline-block',
+    fontSize: '16px',
+    margin: '4px 2px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: '#4CAF50',
+    color: 'white'
+};
