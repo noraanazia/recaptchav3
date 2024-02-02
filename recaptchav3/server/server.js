@@ -6,6 +6,8 @@ const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const axios = require("axios");
 const rateLimit = require("express-rate-limit");
+const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
+const client = new RecaptchaEnterpriseServiceClient();
 
 const app = express();
 const port = 5001;
@@ -57,20 +59,28 @@ const authenticate = (req, res, next) => {
   }
 };
 
-// reCAPTCHA verification route & create new refreshToken
 app.post("/verify-recaptcha", async (req, res) => {
-  console.log("Request Body:", req.body);
+  const action = req.body.action; // Action associated with this token (e.g., 'login', 'signup')
+  const projectPath = client.projectPath('bright-eon-411421');
 
   const responseToken = req.body.token; // The token from the client
   const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${responseToken}`;
 
+  const assessment = {
+    event: {
+        token: responseToken,
+        siteKey: process.env.ReCAPTCHA_SECRET_KEY,
+        expectedAction: action
+    },
+    parent: projectPath
+  };
+
   try {
+    const [response] = await client.createAssessment({ assessment });
     const result = await axios.post(url);
-    console.log("Google reCAPTCHA response:", result.data);
 
     if (result.data.success) {
       // if (result.data.success && result.data?.score > 0.5) {
-      // Verification successful, create a JWT for the user
       const userPayload = { username: "guest" }; // Replace with actual user data if available
       //   const accessToken = jwt.sign(userPayload, jwtSecret, { expiresIn: "1h" }); // 1 hour expiration
       const accessToken = jwt.sign(userPayload, jwtSecret, { expiresIn: "3m" }); // 3mins expiration for test
@@ -89,6 +99,7 @@ app.post("/verify-recaptcha", async (req, res) => {
         });
 
         console.log("##New refreshToken added:", refreshToken);
+        // console.log("##RES:", result);
         res.send({
           success: true,
           message: "reCAPTCHA verified and JWT issued",
